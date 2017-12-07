@@ -6,11 +6,11 @@ December 3, 2017
 Summery
 =======
 
-This data provides the voting history of countries in the United Nations General Assembly, along with information such as date, description, and topics for each vote. In this exploratoy analysis I will explore the historical voting of the United Nations General Assembly, including analyzing differences in voting between countries, across time, and among international issue.
+This data provides the voting history of countries in the United Nations General Assembly, along with information such as date, description, and topics for each vote. In this exploratory analysis I will explore the historical voting of the United Nations General Assembly, including analyzing differences in voting between countries, across time, and international issues.
 
-Orginal dataset come from the **kaggle** *UN General Assembly Votes, 1946-2015*. see [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for value's detail explanation.
+Orginal dataset comes from the **kaggle** *UN General Assembly Votes, 1946-2015*. see [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for detailed explanation.
 
-This dataset originaly come form *Erik Voeten Dataverse* see [United Nations General Assembly Voting Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/12379)
+This dataset originaly comes form *Erik Voeten Dataverse* see [United Nations General Assembly Voting Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/12379)
 
 Packages instalation
 --------------------
@@ -24,7 +24,7 @@ library(countrycode)
 Data Import
 -----------
 
-`Votes` dataset contains the history of each country's vote. The `resolutions` dataset shows relationships betwen each vote and 6 UN resolutions.
+`Votes` dataset contains the history of each country's vote. The `resolutions` dataset shows relationships between each vote and 6 UN resolutions.
 
 ``` r
 votes <- read_csv("votes.csv")
@@ -33,7 +33,7 @@ resolutions <- read_csv("resolutions.csv")
 
 ### Section 1: Data Exploration
 
-Start with`votes` data. In this dataset : The vote column has 5 numbers that represents that country's vote: + **temp** 1 = yes 2 = Abstain 3 = No 8 = Not present 9 = Not a member
+Start with`votes` data. In this dataset : The vote column has 5 numbers that represents that country's vote: 1 = yes 2 = Abstain 3 = No 8 = Not present 9 = Not a member
 
 use `dplyr::filter` to remove rows that I am not interested in (8,9)
 
@@ -73,7 +73,7 @@ Finally use `dplyr::arrange` to find the countries that voted "yes" least often 
     ## 10  1985 United Kingdom of Great Britain and Northern Ireland   151
     ## # ... with 974 more rows, and 1 more variables: percent_yes <dbl>
 
-Apprently , America first.
+Apparently , America first.
 
 Next, I like to know how much the average "agreeableness" of 6 countries changed from year to year(1946-2015) so I filter out 6 countries:
 
@@ -160,11 +160,11 @@ Summarize the votes for each combination of country, year, and topic
 
 Modelling for each country has 4 steps: +Divided the data for each country into a separate dataset in the data column. `tidyr::nest` all columns except country and topic, which will result in a data frame with one row per country-topic. + Use `purrr::map` by applying liner regression to each item. + Use `purrr::map` again to tidy `broom::tidy` each model in the dataset. + Use `tidyr::unnest`to combine all of those into a large data frame.
 
-Then filter the slope of each model (term = year) to see how each is changing over timeand. Also filter out random noise in p.value to extract only cases that are statistically significant.
+Then filter the slope of each model (term = year) to see how each is changing over time. (filter out random noise in p.value to extract only cases that are statistically significant.)
 
-Finnaly use `dplyr::arrange` to find the countries with the highest and lowest slopes (the estimate column)
+Finally use `dplyr::arrange` to find the countries with the highest and lowest slopes (the estimate column)
 
-Countries has the steepest downward trend in Colonialism (goes agnasit UN resolution):
+Countries has the steepest downward trend in Colonialism (goes against UN resolution):
 
 ``` r
 (country_coef_model <- country_year_topic %>% 
