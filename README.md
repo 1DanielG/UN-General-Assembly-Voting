@@ -79,9 +79,9 @@ subject_country %>%
   facet_wrap(~ country)
 ```
 
-![](html2_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-Similarly, we have agreeableness relationship between Scandinavian countries (Norway, Sweden, Denmark), USA and Israel on the same graph, using color to distinguish each country: ![](html2_files/figure-markdown_github/unnamed-chunk-5-1.png)
+Similarly, we have agreeableness relationship between Scandinavian countries (Norway, Sweden, Denmark), USA and Israel on the same graph, using color to distinguish each country: ![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ### Section 2: Data Modelling
 
@@ -219,4 +219,4 @@ country_year_topic %>%
     scale_y_continuous("Yes-vote")
 ```
 
-![](html2_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-11-1.png)
