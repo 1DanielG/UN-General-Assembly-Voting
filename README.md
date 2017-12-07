@@ -46,7 +46,7 @@ Use `dplyr::summarize` to calculate *% of votes that are yes* . It shows the cou
 Finally use `dplyr::arrange` to find the countries that voted "yes" least often over time
 
 ``` r
-votes_tidy <- votes %>% 
+(votes_tidy <- votes %>% 
   filter(vote <= 3) %>% 
   mutate(year = session + 1945 ,
          country = countrycode(ccode,"cown", "country.name" )) %>%
@@ -55,8 +55,23 @@ votes_tidy <- votes %>%
   summarize( total = n() , percent_yes = mean(vote == 1)) %>% 
   filter(total > 100) %>% # remove countries that have fewer than 100 votes.
   arrange(percent_yes) %>% 
-  ungroup()
+  ungroup())
 ```
+
+    ## # A tibble: 984 x 4
+    ##     year                                              country total
+    ##    <dbl>                                                <chr> <int>
+    ##  1  1989                             United States of America   114
+    ##  2  1987                             United States of America   141
+    ##  3  1985                             United States of America   152
+    ##  4  1983                             United States of America   149
+    ##  5  1981                             United States of America   133
+    ##  6  1985                                               Israel   148
+    ##  7  1983                                               Israel   126
+    ##  8  1989                                               Israel   113
+    ##  9  1983 United Kingdom of Great Britain and Northern Ireland   149
+    ## 10  1985 United Kingdom of Great Britain and Northern Ireland   151
+    ## # ... with 974 more rows, and 1 more variables: percent_yes <dbl>
 
 Apprently , America first.
 
