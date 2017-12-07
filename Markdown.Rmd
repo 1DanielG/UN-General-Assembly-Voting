@@ -50,7 +50,7 @@ use `dplyr::filter` to remove rows that I am not interested in (8,9)
 
 First session of the UN was held in 1946 and and holds one session per year.* use `dplyr::mutate` to convert session coloum to a new coloum to make them more informative and easier to work with.
 
-The country codes in the ccode column are what is called [Correlates of War codes](http://cow.dss.ucdavis.edu/data-sets/cow-country-codes). I used the *countrycode* package to translate ccode to country names.
+The country codes in the ccode column are what is called: [Correlates of War codes](http://cow.dss.ucdavis.edu/data-sets/cow-country-codes). I used the *countrycode* package to translate ccode to country names.
 
 
 Use `dplyr::summarize` to calculate _% of votes that are yes_ . It shows the country tends to agree with international consensus(vote = 1 means yes).

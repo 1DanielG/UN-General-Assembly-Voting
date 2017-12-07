@@ -12,7 +12,7 @@ write.csv(resolutions, file = "resolutions.csv",row.names=FALSE)
 votes <- read_csv("votes.csv")
 
 votes_tidy <- votes %>% 
-  filter(vote <=3) %>% 
+  filter(vote <= 3) %>% 
   mutate(year = session + 1945 ,
          country= countrycode(ccode,"cown", "country.name" )) %>%
   select(-c(session,ccode)) %>%
