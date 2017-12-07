@@ -1,0 +1,211 @@
+---
+title: "UN General Assembly Voting"
+author: "Ali Gharaee"
+date: "December 3, 2017"
+output: rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summery
+
+This data provides the voting history of countries in the United Nations General Assembly, along with information such as date, description, and topics for each vote. In this exploratory analysis I will explore the historical voting of the United Nations General Assembly, including analyzing differences in voting between countries, across time, and international issues.
+
+Orginal dataset comes from the **kaggle** *UN General Assembly Votes, 1946-2015*. see [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for detailed explanation.
+
+This dataset originaly comes form *Erik Voeten Dataverse* see [United Nations General Assembly Voting Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/12379)
+
+## Packages instalation
+
+```{r , message=FALSE}
+library(tidyverse)
+library(readr)
+library(countrycode)
+```
+
+## Data Import
+
+`Votes` dataset contains the history of each country's vote.
+The `resolutions` dataset shows relationships between each vote and 6 UN resolutions.
+
+```{r , results =FALSE , message=FALSE}
+votes <- read_csv("votes.csv")
+resolutions <- read_csv("resolutions.csv")
+```
+
+### Section 1: Data Exploration
+
+Start with`votes` data. In this dataset :
+The vote column has 5 numbers that represents that country's vote:
+ 1 = yes
+ 2 = Abstain
+ 3 = No
+ 8 = Not present 
+ 9 = Not a member
+
+use `dplyr::filter` to remove rows that I am not interested in (8,9)
+
+First session of the UN was held in 1946 and and holds one session per year.* use `dplyr::mutate` to convert session coloum to a new coloum to make them more informative and easier to work with.
+
+The country codes in the ccode column are what is called [Correlates of War codes](http://cow.dss.ucdavis.edu/data-sets/cow-country-codes). I used the *countrycode* package to translate ccode to country names.
+
+
+Use `dplyr::summarize` to calculate _% of votes that are yes_ . It shows the country tends to agree with international consensus(vote = 1 means yes).
+
+Finally use `dplyr::arrange` to find the countries that voted "yes" least often over time
+
+```{r}
+(votes_tidy <- votes %>% 
+  filter(vote <= 3) %>% 
+  mutate(year = session + 1945 ,
+         country = countrycode(ccode,"cown", "country.name" )) %>%
+  select(-c(session,ccode)) %>%
+  group_by(year , country) %>% 
+  summarize( total = n() , percent_yes = mean(vote == 1)) %>% 
+  filter(total > 100) %>% # remove countries that have fewer than 100 votes.
+  arrange(percent_yes) %>% 
+  ungroup())
+```
+Apparently , America first.
+
+Next, I like to know how much the average "agreeableness" of 6 countries changed from year to year(1946-2015) so I filter out 6 countries:
+
+  +USA
+  +Denmark
+  +Norway 
+  +Sweden
+  +France
+  +Israel
+
+Use the _ggplot2_ package to turn your results into a visualization of the percentage of "yes" votes over time for 6 countries:
+```{r}
+subject_country <- votes_tidy %>% 
+  filter(country %in% c("United States of America" , "Denmark" ,
+                        "Norway", "Sweden" , "Israel" , "France"))
+
+subject_country %>% 
+  ggplot(aes( x = year , y = percent_yes)) +
+  geom_line(color = "blue") +
+  scale_x_continuous("Year") +
+  scale_y_continuous("Yes-vote") +
+  facet_wrap(~ country)
+```
+
+Similarly, we have agreeableness relationship between Scandinavian countries (Norway, Sweden,  Denmark), USA and Israel on the same graph, using color to distinguish each country:
+```{r , echo=FALSE}
+subject_country2 <- votes_tidy %>% 
+  filter(country %in% c("United States of America" ,
+                        "Norway", "Sweden" , "Israel", "Denmark" ))
+
+subject_country2 %>% 
+  ggplot(aes( x = year , y = percent_yes , color = country)) +
+  geom_line() +
+  scale_x_continuous("Year") +
+  scale_y_continuous("Yes-vote")
+
+  
+```
+
+### Section 2: Data Modelling
+
+A linear regression is a model that examine how one variable changes with respect to another by fitting a best fit line. 
+
+Model the trend with liner regression, finding the best fit line
+Tidying model with _broom_ package.
+
+
+
+
+```{r}
+library(broom)
+```
+
+At this point, analyses will involve joining the votes and resolutions datasets which includes topic information about each country, to be able to analyze votes within particular topics. Then use `tidyr::gather` to tidy the new dataset for further analysis.
+
+### Data preparation
+
+```{r}
+votes_tidy2 <- votes %>%
+  filter(vote <= 3) %>% 
+  mutate(year = session + 1945 ,
+         country = countrycode(ccode,"cown", "country.name" )) %>% 
+  inner_join(resolutions, by = c("rcid", "session")) %>% 
+  gather(topic, has_topic , me:ec) %>% 
+  filter(has_topic == 1) %>% 
+  select(country, year, vote, topic, has_topic) %>% 
+  #recode the data to replace these codes with their full name
+  mutate(topic = recode(topic,
+                        me = "Palestinian conflict",
+                        nu = "Nuclear weapons",
+                        di = "Arms control and disarmament",
+                        hr = "Human rights",
+                        co = "Colonialism",
+                        ec = "Economic development"))
+```
+
+## Data modelling
+
+Summarize the votes for each combination of country, year, and topic 
+
+```{r}
+(country_year_topic <- votes_tidy2 %>% 
+  group_by(country, year, topic) %>% 
+  summarize( total = n() , percent_yes = mean(vote == 1)) %>% 
+  ungroup()  )
+```
+
+
+Modelling for each country has 4 steps:
++Divided the data for each country into a separate dataset in the data column. `tidyr::nest` all columns except country and topic, which will result in a data frame with one row per country-topic. 
++ Use `purrr::map` by applying liner regression to each item.
++ Use `purrr::map` again to tidy `broom::tidy` each model in the dataset.
++ Use `tidyr::unnest`to combine all of those into a large data frame.
+
+Then filter the slope of each model (term = year) to see how each is changing over time. (filter out random noise in p.value to extract only cases that are statistically significant.)
+
+Finally use `dplyr::arrange` to find the countries with the highest and lowest slopes (the estimate column)
+
+
+Countries has the steepest downward trend in Colonialism (goes against UN resolution):
+```{r, warning=FALSE}
+(country_coef_model <- country_year_topic %>% 
+  nest(-country, -topic) %>% 
+  mutate( model = map(data, ~lm(percent_yes ~ year , .))) %>% 
+  mutate(tidied = map(model, tidy)) %>% 
+  unnest(tidied) %>% 
+  filter ( term == "year" , p.adjust(p.value) < 0.05 ,
+           topic == "Colonialism") %>%
+  arrange (estimate))
+```
+
+
+Countries has the steepest upward trend in Colonialism:
+```{r, warning=FALSE}
+(country_coef_model <- country_year_topic %>% 
+  nest(-country, -topic) %>% 
+  mutate( model = map(data, ~lm(percent_yes ~ year , .))) %>% 
+  mutate(tidied = map(model, tidy)) %>% 
+  unnest(tidied) %>% 
+  filter( term == "year" , p.adjust(p.value) < 0.05 ,
+           topic == "Colonialism") %>%
+  arrange(desc(estimate) )  )
+```  
+
+
+Visualizing trends in topics for Norway over time:
+
+```{r}
+country_year_topic %>% 
+  filter (country == "Norway") %>% 
+  ggplot(aes(year, percent_yes ))+
+    geom_line(color = "blue")+
+    facet_wrap(~ topic)+
+    scale_x_continuous("Year") +
+    scale_y_continuous("Yes-vote")
+    
+```
+
+
+
