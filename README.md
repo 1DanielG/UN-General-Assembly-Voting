@@ -6,9 +6,9 @@ December 3, 2017
 Summery
 =======
 
-This data provides the voting history of countries in the United Nations General Assembly, along with information such as date, description, and topics for each vote. In this exploratory analysis I will explore the historical voting of the United Nations General Assembly, including analyzing differences in voting between countries, across time, and international issues.
+This data provides the voting history of countries in the United Nations General Assembly, along with information such as date, description, and topics for each vote. In this exploratory analysis I will explore the historical voting of the United Nations General Assembly, including analyzing differences in voting between countries, across time and international issues.
 
-Original dataset comes from the **kaggle** *UN General Assembly Votes, 1946-2015*. see [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for detailed explanation.
+Original dataset comes from the **kaggle** *UN General Assembly Votes, 1946-2015*. See [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for detailed explanation.
 
 This dataset originally comes form *Erik Voeten Dataverse* see [United Nations General Assembly Voting Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/12379)
 
@@ -33,7 +33,12 @@ resolutions <- read_csv("resolutions.csv")
 
 ### Section 1: Data Exploration
 
-Start with`votes` data. In this dataset: The vote column has 5 numbers that represents that country's vote: 1 = yes 2 = Abstain 3 = No 8 = Not present 9 = Not a member
+Start with`votes` data. In this dataset: The vote column has 5 numbers that represents that country's vote: 
+1 = yes 
+2 = Abstain 
+3 = No 
+8 = Not present 
+9 = Not a member
 
 use `dplyr::filter` to remove rows that I am not interested in (8,9)
 
@@ -43,7 +48,7 @@ The country codes in the ccode column are what is called [Correlates of War code
 
 Use `dplyr::summarize` to calculate *% of votes that are yes* . It shows the country tends to agree with international consensus (vote = 1 means yes).
 
-Finally use `dplyr::arrange` to find the countries that voted "yes" least often over time
+Finally use `dplyr::arrange` to find the countries that voted "yes" least often over time.
 
 ``` r
 (votes_tidy <- votes %>% 
@@ -73,11 +78,15 @@ Finally use `dplyr::arrange` to find the countries that voted "yes" least often 
     ## 10  1985 United Kingdom of Great Britain and Northern Ireland   151
     ## # ... with 974 more rows, and 1 more variables: percent_yes <dbl>
 
-Apparently, America first.
 
 Next, I like to know how much the average "agreeableness" of 6 countries changed from year to year (1946-2015) so I filter out 6 countries:
 
-+USA +Denmark +Norway +Sweden +France +Israel
++USA
++Denmark
++Norway 
++Sweden
++France
++Israel
 
 Use the *ggplot2* package to turn your results into a visualization of the percentage of "yes" votes over time for 6 countries:
 
@@ -96,11 +105,11 @@ subject_country %>%
 
 ![](README_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-Similarly, we have agreeableness relationship between Scandinavian countries (Norway, Sweden, Denmark), USA and Israel on the same graph, using color to distinguish each country: ![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
+Similarly, we have agreeableness relationship between Scandinavian countries (Norway, Sweden, Denmark), USA and Israel on the same graph, using colors to distinguish countries: ![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ### Section 2: Data Modelling
 
-A linear regression is a model that examine how one variable changes with respect to another by fitting a best fit line.
+A linear regression is a model that examines how one variable changes with respect to another by fitting a best fit line.
 
 Model the trend with liner regression, finding the best fit line Tidying model with *broom* package.
 
@@ -108,7 +117,7 @@ Model the trend with liner regression, finding the best fit line Tidying model w
 library(broom)
 ```
 
-At this point, analyses will involve joining the votes and resolutions datasets which includes topic information about each country, to be able to analyze votes within particular topics. Then use `tidyr::gather` to tidy the new dataset for further analysis.
+At this point, analysis will involve joining the votes and resolutions datasets which includes topic information about each country, to be able to analyze votes within particular topics. Then use `tidyr::gather` to tidy up the new dataset for further analysis.
 
 ### Data preparation
 
@@ -134,7 +143,7 @@ votes_tidy2 <- votes %>%
 Data modelling
 --------------
 
-Summarize the votes for each combination of country, year, and topic
+Summarize the votes for each combination of countries, years, and topics:
 
 ``` r
 (country_year_topic <- votes_tidy2 %>% 
@@ -158,9 +167,14 @@ Summarize the votes for each combination of country, year, and topic
     ## 10 Afghanistan  1949         Palestinian conflict    11   0.8181818
     ## # ... with 26,958 more rows
 
-Modelling for each country has 4 steps: +Divided the data for each country into a separate dataset in the data column. `tidyr::nest` all columns except country and topic, which will result in a data frame with one row per country-topic. + Use `purrr::map` by applying liner regression to each item. + Use `purrr::map` again to tidy `broom::tidy` each model in the dataset. + Use `tidyr::unnest`to combine all of those into a large data frame.
+Modelling for each country has 4 steps: 
 
-Then filter the slope of each model (term = year) to see how each is changing over time. (filter out random noise in p.value to extract only cases that are statistically significant.)
+- Divided the data for each country into a separate dataset in the data column. `tidyr::nest` all columns except country and topic, which will result in a data frame with one row per country-topic. 
+- Use `purrr::map` by applying liner regression to each item. 
+- Use `purrr::map` again to tidy `broom::tidy` each model in the dataset. 
+- Use `tidyr::unnest`to combine all of those into a large data frame.
+
+Then filter the slope of each model (term = year) to see how each one is changing over time. (filter out random noise in p.value to extract only cases that are statistically significant.)
 
 Finally use `dplyr::arrange` to find the countries with the highest and lowest slopes (the estimate column)
 
