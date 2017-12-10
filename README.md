@@ -8,11 +8,11 @@ Summery
 
 This data provides the voting history of countries in the United Nations General Assembly, along with information such as date, description, and topics for each vote. In this exploratory analysis I will explore the historical voting of the United Nations General Assembly, including analyzing differences in voting between countries, across time, and international issues.
 
-Orginal dataset comes from the **kaggle** *UN General Assembly Votes, 1946-2015*. see [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for detailed explanation.
+Original dataset comes from the **kaggle** *UN General Assembly Votes, 1946-2015*. see [Kaggle UN dataset](https://www.kaggle.com/unitednations/general-assembly) for detailed explanation.
 
-This dataset originaly comes form *Erik Voeten Dataverse* see [United Nations General Assembly Voting Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/12379)
+This dataset originally comes form *Erik Voeten Dataverse* see [United Nations General Assembly Voting Data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/12379)
 
-Packages instalation
+Packages installation
 --------------------
 
 ``` r
@@ -33,15 +33,15 @@ resolutions <- read_csv("resolutions.csv")
 
 ### Section 1: Data Exploration
 
-Start with`votes` data. In this dataset : The vote column has 5 numbers that represents that country's vote: 1 = yes 2 = Abstain 3 = No 8 = Not present 9 = Not a member
+Start with`votes` data. In this dataset: The vote column has 5 numbers that represents that country's vote: 1 = yes 2 = Abstain 3 = No 8 = Not present 9 = Not a member
 
 use `dplyr::filter` to remove rows that I am not interested in (8,9)
 
-First session of the UN was held in 1946 and and holds one session per year.\* use `dplyr::mutate` to convert session coloum to a new coloum to make them more informative and easier to work with.
+First session of the UN was held in 1946 and holds one session per year.\* use `dplyr::mutate` to convert session column to a new column in order to make them more informative and easier to work with.
 
 The country codes in the ccode column are what is called [Correlates of War codes](http://cow.dss.ucdavis.edu/data-sets/cow-country-codes). I used the *countrycode* package to translate ccode to country names.
 
-Use `dplyr::summarize` to calculate *% of votes that are yes* . It shows the country tends to agree with international consensus(vote = 1 means yes).
+Use `dplyr::summarize` to calculate *% of votes that are yes* . It shows the country tends to agree with international consensus (vote = 1 means yes).
 
 Finally use `dplyr::arrange` to find the countries that voted "yes" least often over time
 
@@ -73,9 +73,9 @@ Finally use `dplyr::arrange` to find the countries that voted "yes" least often 
     ## 10  1985 United Kingdom of Great Britain and Northern Ireland   151
     ## # ... with 974 more rows, and 1 more variables: percent_yes <dbl>
 
-Apparently , America first.
+Apparently, America first.
 
-Next, I like to know how much the average "agreeableness" of 6 countries changed from year to year(1946-2015) so I filter out 6 countries:
+Next, I like to know how much the average "agreeableness" of 6 countries changed from year to year (1946-2015) so I filter out 6 countries:
 
 +USA +Denmark +Norway +Sweden +France +Israel
 
